@@ -1,0 +1,10 @@
+<launch>
+  <node pkg="llm_vision_control" type="llm_vision_node.py" name="llm_vision_node" output="screen">
+    <param name="api_key" value="API KEY REQUIRED" />
+  </node>
+
+  <node pkg="llm_vision_control" type="object_pose_client.py" name="object_pose_client" output="screen">
+    <param name="object_name" value="lamp" />
+    <param name="service_name" value="object_pose" />
+  </node>
+</launch>
