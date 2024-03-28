@@ -6,4 +6,4 @@ This repo takes in data from a realsense camera with raw image data and depth da
 
 
 Here is an example of detecting a power supply, something that likely does not exist in any common supervised training data set, but GPT-4 handles just fine
-(Power Supply Detection)[src/scripts/power_supply_detection.png]
+![Power Supply Detection](src/scripts/power_supply_detection.png)
