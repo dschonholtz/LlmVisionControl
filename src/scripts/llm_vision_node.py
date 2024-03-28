@@ -65,7 +65,7 @@ class LLMVisionNode:
             return ObjectPoseResponse(PoseStamped())
 
         # Convert grid coordinates to pixel values in the original image
-        initial_pixel_coordinates = self.grid_to_pixel(grid_coordinates, pil_image, pil_image)
+        initial_pixel_coordinates = self.grid_to_pixel(grid_coordinates, pil_image_with_grid, pil_image_with_grid)
 
         # Draw bounding boxes around the initial object coordinates
         self.draw_bounding_box(pil_image_with_grid, initial_pixel_coordinates)
@@ -154,8 +154,8 @@ class LLMVisionNode:
         cell_width = width // grid_size
         cell_height = height // grid_size
 
-        col = ord(grid_coordinates[0]) - ord('A')
-        row = int(grid_coordinates[1])
+        row = ord(grid_coordinates[0]) - ord('A')
+        col = int(grid_coordinates[1])
 
         x = col * cell_width + cell_width // 2
         y = row * cell_height + cell_height // 2
@@ -241,6 +241,12 @@ class LLMVisionNode:
         return base64_image
 
     def add_grid(self, image):
+        # Resize the image to 512 width, keeping the height proportional
+        width, height = image.size
+        new_width = 512
+        new_height = int(height * (new_width / width))
+        image = image.resize((new_width, new_height))
+
         width, height = image.size
         grid_size = 10
         cell_width = width // grid_size
@@ -250,7 +256,8 @@ class LLMVisionNode:
 
         # Use the pathlib library to get this files folder:
         this_folder = Path(__file__).parent.resolve()
-        font_size = height // 13
+
+        font_size = height // 25
         font = ImageFont.truetype(str(this_folder / "Arial.ttf"), font_size)
 
         for i in range(grid_size):
@@ -258,14 +265,15 @@ class LLMVisionNode:
             draw.line([(i * cell_width, 0), (i * cell_width, height)], fill=(255, 255, 255), width=1)
             # Draw horizontal lines
             draw.line([(0, i * cell_height), (width, i * cell_height)], fill=(255, 255, 255), width=1)
+            # Add labels on the top (A to J) and on the left (0 to 9) outside the loop
 
-            # Add labels on the top (A to J)
-            label = chr(ord('A') + i)
-            draw.text((i * cell_width + (cell_width) // 2, 5), label, fill=(255, 255, 255), font=font)
+        for i in range(grid_size):
+            for j in range(grid_size):
+                # Add labels to each grid cell with letters unique per row and numbers unique per column
+                cell_label = chr(ord('A') + i) + str(j)
+                draw.text((j * cell_width, i * cell_height), cell_label, fill=(255, 255, 255), font=font, anchor='mm')
 
-            # Add labels on the left (0 to 9)
-            label = str(i)
-            draw.text((5, i * cell_height), label, fill=(255, 255, 255), font=font)
+
         return image
 
 
@@ -297,6 +305,7 @@ class LLMVisionNode:
     ```
 
     If the object you were asked to find is not in the description, you must return with none in the grid-cell xml block.
+    You may only reply with a single grid cell in the grid cell xml block.
 
     Some example responses might be:
 
@@ -335,7 +344,7 @@ class LLMVisionNode:
                             "type": "image_url",
                             "image_url": {
                                 "url": f"data:image/png;base64,{base64_image}",
-                                "detail": "high"
+                                "detail": "low"
                             }
                         }
                     ]

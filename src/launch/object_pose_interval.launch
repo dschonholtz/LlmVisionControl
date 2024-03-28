@@ -4,7 +4,7 @@
   </node>
   
   <node pkg="llm_vision_control" type="object_pose_client.py" name="object_pose_client" output="screen">
-    <param name="object_name" value="Smily Face" />
+    <param name="object_name" value="mug of tea" />
     <param name="service_name" value="object_pose" />
     <param name="interval" value="5" />
   </node>
